@@ -1,47 +1,33 @@
-const MongoClient = require("mongodb").MongoClient;
-const assert = require("assert");
-const dboper = require("./operations");
+const mongoose = require("mongoose");
+const Dishes = require("./models/dishes");
 
-const url = "mongodb://localhost:27017/";
-const dbname = "conFusion";
+const url = "mongodb://localhost:27017/conFusion";
+const connect = mongoose.connect(url);
 
-MongoClient.connect(url, (err, client) => {
-  assert.equal(err, null);
+connect.then((db) => {
+  console.log("Connected to server sucessfully");
 
-  console.log("Connected correctly to server");
+  var newDish = Dishes({
+    name: "cheese pizza",
+    description: "Chilly cheese pizza",
+  });
 
-  const db = client.db(dbname);
-  dboper
-    .insertDocument(db, { name: "Vadonut", description: "Test" }, "dishes")
-    .then((result) => {
-      console.log("Insert Document:\n", result.ops);
+  newDish
+    .save()
+    .then((dish) => {
+      console.log(dish);
 
-      return dboper.findDocuments(db, "dishes");
+      return Dishes.find({});
     })
-    .then((docs) => {
-      console.log("Found Documents:\n", docs);
+    .then((dishes) => {
+      console.log(dishes);
 
-      return dboper.updateDocument(
-        db,
-        { name: "Vadonut" },
-        { description: "Updated Test" },
-        "dishes"
-      );
+      return Dishes.remove({});
     })
-    .then((result) => {
-      console.log("Updated Document:\n", result.result);
-
-      return dboper.findDocuments(db, "dishes");
+    .then(() => {
+      return mongoose.connection.close();
     })
-    .then((docs) => {
-      console.log("Found Updated Documents:\n", docs);
-
-      return db.dropCollection("dishes");
-    })
-    .then((result) => {
-      console.log("Dropped Collection: ", result);
-
-      return client.close();
-    })
-    .catch((err) => console.log(err));
-}); //.catch((err) => console.log("Error occured in connecting"));
+    .catch((err) => {
+      console.log(err);
+    });
+});
