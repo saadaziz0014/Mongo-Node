@@ -8,16 +8,35 @@ connect.then((db) => {
   console.log("Connected to server sucessfully");
 
   Dishes.create({
-    name: "Uthapizza",
+    name: "Uthapizza2",
     description: "Test",
   })
     .then((dish) => {
       console.log(dish);
 
-      return Dishes.find({}).exec();
+      return Dishes.findByIdAndUpdate(
+        dish._id,
+        {
+          $set: { description: "updated test" },
+        },
+        {
+          new: true,
+        }
+      ).exec();
     })
-    .then((dishes) => {
-      console.log(dishes);
+    .then((dish) => {
+      console.log(dish);
+
+      dish.comments.push({
+        rating: 5,
+        comment: "Loving it",
+        author: "Saad Aziz",
+      });
+
+      return dish.save();
+    })
+    .then((dish) => {
+      console.log(dish);
 
       return Dishes.remove({});
     })
